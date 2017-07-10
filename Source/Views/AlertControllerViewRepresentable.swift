@@ -1,6 +1,6 @@
 import UIKit
 
-protocol AlertControllerViewRepresentable {
+protocol AlertControllerViewRepresentable: class {
 
     var title: NSAttributedString? { get set }
     var message: NSAttributedString? { get set }
@@ -18,6 +18,8 @@ protocol AlertControllerViewRepresentable {
     var actionsCollectionView: ActionsCollectionView! { get }
 
     func add(_ behaviors: AlertBehaviors)
+    func addDragTapBehavior()
+    
     func prepareLayout()
 }
 
@@ -36,13 +38,11 @@ extension AlertControllerViewRepresentable where Self: UIView {
     var topView: UIView { return self }
 
     func add(_ behaviors: AlertBehaviors) {
-        if behaviors.contains(.DragTap) {
-            let panGesture = UIPanGestureRecognizer(target: self,
-                action: #selector(AlertControllerView.highlightAction(for:)))
-            self.addGestureRecognizer(panGesture)
+        if behaviors.contains(.dragTap) {
+            self.addDragTapBehavior()
         }
 
-        if behaviors.contains(.Parallax) {
+        if behaviors.contains(.parallax) {
             self.addParallax()
         }
     }
@@ -62,36 +62,5 @@ extension AlertControllerViewRepresentable where Self: UIView {
         group.motionEffects = [horizontal, vertical]
 
         self.addMotionEffect(group)
-    }
-}
-
-class AlertControllerView: UIView, AlertControllerViewRepresentable {
-
-    @IBOutlet var titleLabel: AlertLabel! = AlertLabel() {
-        didSet { self.titleLabel.translatesAutoresizingMaskIntoConstraints = false }
-    }
-
-    @IBOutlet var messageLabel: AlertLabel! = AlertLabel() {
-        didSet { self.messageLabel.translatesAutoresizingMaskIntoConstraints = false }
-    }
-
-    @IBOutlet var actionsCollectionView: ActionsCollectionView! = ActionsCollectionView() {
-        didSet { self.actionsCollectionView.translatesAutoresizingMaskIntoConstraints = false }
-    }
-
-    @IBOutlet var contentView: UIView! = UIView()
-
-    var actions: [AlertAction] = []
-    var visualStyle: AlertVisualStyle!
-    var actionTappedHandler: ((AlertAction) -> Void)?
-
-    func prepareLayout() {
-        self.actionsCollectionView.actions = self.actions
-        self.actionsCollectionView.visualStyle = self.visualStyle
-    }
-
-    @objc
-    func highlightAction(for sender: UIPanGestureRecognizer) {
-        self.actionsCollectionView.highlightAction(for: sender)
     }
 }
